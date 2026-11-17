@@ -36,6 +36,8 @@
   --cn-red: #c0272d; --cn-white: #ffffff; --cn-tint: #fbe7e6; --cn-line: #e9b4b2;
   --shadow: 0 4px 18px #1f262026;
   --relief-opacity: 1;
+  --found-relief: .5;
+  --line-relief: #f3f0e6; --w-relief: 0.8; --w-relief-near: 1.5;
   --display: "IM Fell English", Georgia, "Times New Roman", serif;
   --num: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
   --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -43,11 +45,11 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #161b18; --surface: #1f2622; --fg: #e8ece7; --muted: #9aa69d; --line: #a9b5ac;
   --fill: #333d37; --found: #4fb386; --found-soft: #4fb38630; --flash: #f0b947; --missing: #e0715f;
-  --knob: #f4f6f3; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark } }
+  --knob: #f4f6f3; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .25; --line-relief: #a9b5ac; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #161b18; --surface: #1f2622; --fg: #e8ece7; --muted: #9aa69d; --line: #a9b5ac;
   --fill: #333d37; --found: #4fb386; --found-soft: #4fb38630; --flash: #f0b947; --missing: #e0715f;
-  --knob: #f4f6f3; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark }
+  --knob: #f4f6f3; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .25; --line-relief: #a9b5ac; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark }
 
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -991,13 +993,14 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
   let found = stores.sacco;
   let showMissing = false, terrainOn = false;
 
+  function nearZoom() { try { return map.getZoom() >= 10; } catch (e) { return false; } }   // confini più spessi solo da vicino
   function style(name) {
     const f = found.has(name);
     return {
-      color: css("--line"), opacity: 0.85,
+      color: terrainOn ? css("--line-relief") : css("--line"), opacity: 0.85,
       fillColor: f ? css("--found") : (showMissing ? css("--missing") : css("--fill")),
-      fillOpacity: terrainOn ? (f ? 0.25 : (showMissing ? 0.3 : 0.12)) : (f ? 0.62 : (showMissing ? 0.32 : 0.9)),
-      weight: terrainOn ? 1.1 : 0.8
+      fillOpacity: terrainOn ? (f ? +css("--found-relief") : (showMissing ? 0.3 : 0.12)) : (f ? 0.62 : (showMissing ? 0.32 : 0.9)),
+      weight: terrainOn ? +css(nearZoom() ? "--w-relief-near" : "--w-relief") : 0.8
     };
   }
 
@@ -1038,6 +1041,8 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
     $("map").classList.toggle("far", map.getZoom() < 9.5);
   }
   map.on("zoomend", updateLabelZoom);
+  let wasNear = nearZoom();
+  map.on("zoomend", () => { const n = nearZoom(); if (n !== wasNear) { wasNear = n; if (terrainOn) restyleAll(); } });
 
   function save() { try { localStorage.setItem(MODES[mode], JSON.stringify([...found])); } catch (e) {} }
   function load() {
