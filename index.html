@@ -212,6 +212,15 @@ form { display: flex; gap: 6px; align-items: stretch; }
 .hero-new { opacity: 0; pointer-events: none; transition: opacity 1.4s ease; }
 .hero-new.show { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { .hero-new { transition: none; } }
+/* apertura: prima solo la foto, poi i testi arrivano da dietro quando i font sono pronti */
+#home .home-stage, #home .gear { transition: opacity 1.5s ease-out, scale 1.5s cubic-bezier(.2,.7,.25,1); }
+.egg-stage { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }   /* z-index 0: resta sotto la sfumatura scura di #home::before, come la foto */
+.egg-stage > div { position: absolute; }
+.egg-stage .clip { overflow: hidden; }
+.egg-stage img { position: absolute; display: block; max-width: none; }
+.egg-stage .ring { position: absolute; border: 1.5px solid #ffffff80; border-radius: 50%; box-shadow: 0 0 6px #ffffff30, inset 0 0 4px #00000020; }
+html.intro #home .home-stage, html.intro #home .gear { opacity: 0; scale: .82; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { #home .home-stage, #home .gear { transition: opacity .4s; scale: 1 !important; } }
 /* rotella e finestre delle impostazioni */
 .gear { position: absolute; z-index: 4; top: calc(env(safe-area-inset-top, 0px) + 12px); right: max(12px, env(safe-area-inset-right, 0px));
   width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%; border: 0;
@@ -240,7 +249,7 @@ button.danger.armed { background: var(--missing); color: #fff; border-color: var
 .tune-list li.now { outline: 2px solid var(--found); }
 /* 'Nduma! e la scelta della modalità: al centro, in alto, sulla montagna (dove non c'è nessuno) */
 .home-stage {
-  position: absolute; z-index: 2; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 22%); transform: translateX(-50%);
+  position: absolute; z-index: 2; left: 0; right: 0; margin: 0 auto; top: calc(env(safe-area-inset-top, 0px) + 22%);
   width: min(440px, calc(100% - 32px)); display: grid; justify-items: center;
 }
 .nduma-box { display: grid; justify-items: center; gap: 12px; }
@@ -250,9 +259,9 @@ button.danger.armed { background: var(--missing); color: #fff; border-color: var
 .nduma {
   font-family: var(--display); font-weight: 400; font-size: clamp(32px, 8.5vw, 42px); letter-spacing: .02em; line-height: 1;
   padding: 10px 34px 12px; border-radius: 14px; cursor: pointer; color: #fff;
-  background: rgba(16, 66, 44, .36); border: 1.5px solid rgba(255,255,255,.35);
-  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-  text-shadow: 0 1px 2px #000a; box-shadow: 0 8px 24px #0005;
+  background: rgba(16, 66, 44, .14); border: 1.5px solid rgba(255,255,255,.35);
+  backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px);
+  text-shadow: 0 1px 3px #000c; box-shadow: 0 6px 18px #0003;
 }
 .nduma:hover { transform: translateY(-1px); }
 .home-card .pick { margin: -4px 0 0; font-family: var(--display); font-size: 21px; }
@@ -363,7 +372,7 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
 @media (prefers-reduced-motion: reduce) { .bar i, .track, .track::after, .chev { transition: none; } }
 </style>
 
-<script>window.__hostTheme=document.documentElement.getAttribute("data-theme");try{var t=localStorage.getItem("comuni-cuneo-tema");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<script>document.documentElement.classList.add("intro");window.__hostTheme=document.documentElement.getAttribute("data-theme");try{var t=localStorage.getItem("comuni-cuneo-tema");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 </head><body>
 <div id="map" role="application" aria-label="Mappa dei comuni della provincia di Cuneo"></div>
 
@@ -1320,7 +1329,7 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
   const KEY_GUESTS = "comuni-cuneo-ospiti";
   let guests = new Set();
   try { guests = new Set(JSON.parse(localStorage.getItem(KEY_GUESTS)) || []); } catch (e) {}
-  let shown = new Set(guests);
+  let shown = new Set();      // all'apertura anche i personaggi già trovati compaiono in dissolvenza
   function tryEgg(raw) {
     const q = norm(raw);
     const hit = FRIENDS.find(([, full]) => { const w = full.split(" "); return q === norm(full) || q === norm(w.slice().reverse().join("")); });
@@ -1337,6 +1346,135 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
   const imgCache = {};
   const loadImg = src => imgCache[src] || (imgCache[src] = new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }));
   const HERO_BASE = $("heroImg").getAttribute("src");
+  // apertura: aspetta i font (max 3 s), mostra i testi, poi fa comparire i personaggi
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const fontsP = document.fonts ? Promise.all(['400 1em "IM Fell English"', '400 1em Barlow', '600 1em "Barlow Condensed"'].map(f => document.fonts.load(f).catch(() => {}))).then(() => document.fonts.ready) : Promise.resolve();
+  const introP = Promise.all([Promise.race([fontsP, wait(3000)]), wait(1000 - performance.now())])
+    .then(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))))
+    .then(() => { document.documentElement.classList.remove("intro"); return wait(1500); });
+
+  /* Ingresso dei personaggi: prima le rive (dai bordi della foto), poi chi è in acqua (onde), il mostro, il sole, l'albero */
+  const SHORE = { erbi: -1, cavallera: -1, parrinello: 1, crosta: 1 };          // -1 entra da sinistra, 1 da destra
+  const WATER = { ferrari: .48, chiarpenello: .49, baratteri: .49, carosso1: .5, cavallo: .48, barale: .5, caroni: .48 };   // linea dell'acqua (frazione d'altezza)
+  const SUN = [220, 205];
+  const LAKE = [[0,905],[760,905],[850,925],[950,960],[1050,1000],[1200,1060],[1200,1800],[640,1800],[560,1660],[450,1590],[300,1530],[200,1490],[0,1480]];   // contorno del lago: onde e cerchi restano dentro                                                         // centro del volto dell'uomo-sole
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function heroBox() {
+    const img = $("heroImg"), r = img.getBoundingClientRect(), h0 = $("home").getBoundingClientRect();
+    const fit = getComputedStyle(img).objectFit, f = fit === "contain" ? Math.min : Math.max;
+    const sc = f(r.width / 1200, r.height / 1800);
+    return { sc, ox: r.left - h0.left + (r.width - 1200 * sc) * .5, oy: r.top - h0.top + (r.height - 1800 * sc) * .4 };
+  }
+  let warpN = 0;
+  function tween(dur, delay, fn) {        // fn(t) con t da 0 a 1
+    return new Promise(res => setTimeout(() => {
+      const t0 = performance.now();
+      const step = now => { const t = Math.min(1, (now - t0) / dur); fn(t); t < 1 ? requestAnimationFrame(step) : res(); };
+      requestAnimationFrame(step);
+    }, delay));
+  }
+  // acqua che si deforma attorno a chi emerge, e cerchi che si allargano sparendo
+  function waves(stage, cx, cy, w, sc, z, delay) {
+    const id = "warp" + (++warpN), ns = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(ns, "svg"); svg.setAttribute("width", 0); svg.setAttribute("height", 0); svg.style.position = "absolute";
+    svg.innerHTML = `<filter id="${id}" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.018 0.07" numOctaves="2" seed="${warpN * 7}"/><feDisplacementMap in="SourceGraphic" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter>`;
+    stage.append(svg);
+    const turb = svg.querySelector("feTurbulence"), disp = svg.querySelector("feDisplacementMap");
+    const rw = w * 3.2, rh = w * 1.1;
+    const zone = document.createElement("div");
+    Object.assign(zone.style, { left: cx - rw / 2 + "px", top: cy - rh / 2 + "px", width: rw + "px", height: rh + "px", zIndex: z,
+      backgroundImage: `url("${HERO_BASE}")`, backgroundSize: `${1200 * sc}px ${1800 * sc}px`, backgroundPosition: `${-(cx - rw / 2)}px ${-(cy - rh / 2)}px`,
+      filter: `url(#${id})`, opacity: 0,
+      maskImage: "radial-gradient(closest-side, #000 55%, transparent)", webkitMaskImage: "radial-gradient(closest-side, #000 55%, transparent)" });
+    stage.append(zone);
+    const done = tween(2600, delay, t => {
+      const k = 1 - t;
+      zone.style.opacity = Math.min(1, t * 8) * (t < .8 ? 1 : (1 - t) / .2);
+      disp.setAttribute("scale", (22 * sc * 2.2 * k * k).toFixed(2));
+      turb.setAttribute("baseFrequency", `${(0.018 + 0.01 * t).toFixed(4)} ${(0.07 - 0.03 * t).toFixed(4)}`);
+    }).then(() => { zone.remove(); svg.remove(); });
+    for (let i = 0; i < 3; i++) {
+      const ring = document.createElement("div"); ring.className = "ring";
+      const r0 = w * .7;
+      Object.assign(ring.style, { left: cx - r0 / 2 + "px", top: cy - r0 * .1 + "px", width: r0 + "px", height: r0 * .2 + "px", zIndex: z });
+      stage.append(ring);
+      const g = (k, o, off) => Object.assign({ left: cx - r0 * k / 2 + "px", top: cy - r0 * k * .1 + "px", width: r0 * k + "px", height: r0 * k * .2 + "px", opacity: o }, off != null ? { offset: off } : {});
+      ring.animate([g(.4, 0), g(1, .75, .08), g(7, 0)],
+        { duration: 3600, delay: delay + 150 + i * 420, easing: "cubic-bezier(.15,.6,.4,1)", fill: "both" }).finished.then(() => ring.remove());
+    }
+    return done;
+  }
+  async function playIntro(set) {
+    const stage = document.createElement("div"); stage.className = "egg-stage";
+    $("heroNew").after(stage);
+    await $("heroImg").decode().catch(() => {});
+    const { sc, ox, oy } = heroBox();
+    Object.assign(stage.style, { left: ox + "px", top: oy + "px", width: 1200 * sc + "px", height: 1800 * sc + "px", right: "auto", bottom: "auto" });   // i bordi della foto tagliano chi entra
+    const lake = document.createElement("div");     // sotto tutti i personaggi, ritagliato sul lago
+    Object.assign(lake.style, { inset: 0, zIndex: 1, clipPath: "polygon(" + LAKE.map(([x, y]) => `${x / 12}% ${y / 18}%`).join(",") + ")" });
+    stage.append(lake);
+    const items = EGGS.filter(e => set.has(e.k));
+    await Promise.all(items.map(e => loadImg(e.src).catch(() => {})));
+    let curZ = 2;
+    const place = (el, x, y, w, h) => Object.assign(el.style, { zIndex: curZ, left: x * sc + "px", top: y * sc + "px", width: w * sc + "px", height: h * sc + "px" });
+    const mkImg = (e, top) => { const i = document.createElement("img"); i.src = e.src; i.alt = ""; Object.assign(i.style, { left: 0, top: -top * sc + "px", width: e.w * sc + "px", height: e.h * sc + "px" }); return i; };
+    const anims = [];
+    const zOf = e => (EGGS.indexOf(e) + 1) * 2;
+    function shore(e, delay) {
+      curZ = zOf(e);
+      const box = document.createElement("div"); place(box, e.x, e.y, e.w, e.h); box.append(mkImg(e, 0)); stage.append(box);
+      const dist = SHORE[e.k] < 0 ? e.x + e.w : 1200 - e.x;                          // parte appena fuori dal bordo della foto
+      const dur = Math.min(3200, Math.max(1600, dist / (e.h * .45) * 1000));       // passo realistico, in proporzione alla sua altezza
+      anims.push(box.animate([{ transform: `translateX(${SHORE[e.k] * dist * sc}px)` }, { transform: "translateX(0)" }],
+        { duration: dur, delay, easing: "cubic-bezier(.3,.1,.35,1)", fill: "backwards" }).finished);
+      return dur;
+    }
+    function water(e, wl, delay) {
+      curZ = zOf(e);
+      const cut = Math.round(e.h * wl);
+      const top = document.createElement("div"); top.className = "clip"; place(top, e.x, e.y, e.w, cut); top.append(mkImg(e, 0));
+      const bot = document.createElement("div"); bot.className = "clip"; place(bot, e.x, e.y + cut, e.w, e.h - cut); bot.append(mkImg(e, cut));
+      stage.append(bot, top);
+      anims.push(top.firstChild.animate([{ transform: `translateY(${cut * sc}px)` }, { transform: "translateY(0)" }], { duration: 1600, delay: delay + 200, easing: "cubic-bezier(.25,.7,.35,1)", fill: "backwards" }).finished);
+      anims.push(bot.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1600, delay: delay + 700, fill: "backwards" }).finished);
+      anims.push(waves(lake, (e.x + e.w / 2) * sc, (e.y + cut) * sc, e.w * sc, sc, 1, delay));
+    }
+    function sun(e, delay) {             // in contemporanea: il volto compare lentamente, i raggi si allargano veloci da lui
+      curZ = zOf(e);
+      const mk = () => { const b = document.createElement("div"); place(b, e.x, e.y, e.w, e.h); b.append(mkImg(e, 0)); stage.append(b); return b; };
+      const rays = mk(), face = mk();
+      const cx = SUN[0] * sc, cy = SUN[1] * sc, R = Math.hypot(1200, 1800) * sc, soft = 140 * sc, fr = 88 * sc, fs = 30 * sc;
+      const setM = (el, v) => { el.style.maskImage = el.style.webkitMaskImage = v; };
+      const ring = r => r <= fr + fs ? "linear-gradient(transparent, transparent)" : `radial-gradient(circle at ${cx}px ${cy}px, transparent ${fr}px, #000 ${fr + fs}px, #000 ${r}px, transparent ${r + soft}px)`;
+      setM(face, `radial-gradient(circle at ${cx}px ${cy}px, #000 ${fr}px, transparent ${fr + fs}px)`);
+      setM(rays, ring(0));          // niente bagliore prima del suo turno
+      anims.push(face.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 4200, delay, easing: "ease-in-out", fill: "backwards" }).finished);
+      anims.push(tween(1200, delay, t => setM(rays, ring(fr + fs + (R - fr) * (1 - Math.pow(1 - t, 2))))).then(() => setM(rays, ring(R * 2))));
+    }
+    function fade(e, delay, dur) {
+      curZ = zOf(e);
+      const box = document.createElement("div"); place(box, e.x, e.y, e.w, e.h); box.append(mkImg(e, 0)); stage.append(box);
+      anims.push(box.animate([{ opacity: 0 }, { opacity: 1 }], { duration: dur, delay, easing: "ease-in-out", fill: "backwards" }).finished);
+    }
+    if (reduce) { for (const e of items) fade(e, 0, 800); }
+    else {
+      let t = 0;
+      const g1 = items.filter(e => e.k in SHORE), g2 = items.filter(e => e.k in WATER && e.k !== "caroni");
+      const monster = items.find(e => e.k === "caroni"), sunE = items.find(e => e.k === "pellegrino"), tree = items.find(e => e.k === "carosso2");
+      let end = 0;
+      g1.forEach((e, i) => { end = Math.max(end, t + i * 300 + shore(e, t + i * 300)); }); if (g1.length) t = end - 500;
+      let k = 0;            // Alessia e Ilaria escono insieme
+      g2.forEach(e => { if (e.k === "barale" && g2.some(o => o.k === "cavallo")) k--; water(e, WATER[e.k], t + k * 450); k++; });
+      if (g2.length) t += 1500 + (k - 1) * 450;
+      if (monster) { water(monster, WATER.caroni, t); t += 2000; }
+      if (sunE) { sun(sunE, t); t += 3600; }
+      if (tree) fade(tree, t, 1400);
+    }
+    await Promise.all(anims).catch(() => {});
+    await wait(300);
+    return stage;
+  }
+  let introPlayed = false;
   async function composeHero(set) {
     const c = document.createElement("canvas"); c.width = 1200; c.height = 1800;
     const g = c.getContext("2d");
@@ -1346,17 +1484,24 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
   }
   let heroBusy = Promise.resolve(), heroUrl = null;
   function setHero(url) {
-    $("heroImg").src = url; $("heroBlur").style.backgroundImage = 'url("' + url + '")';
+    $("heroImg").src = url;      // lo sfondo sfocato resta sempre quello della foto originale
     if (heroUrl) URL.revokeObjectURL(heroUrl); heroUrl = url;
   }
   function updateHero() {
-    heroBusy = heroBusy.then(async () => {
+    heroBusy = heroBusy.then(() => introP).then(async () => {
       const want = new Set(guests);
       const fresh = [...want].some(k => !shown.has(k));
       if (!fresh && (heroUrl || !want.size)) return;
+      const first = !introPlayed; introPlayed = true;
+      if (first && want.size) {
+        const [url, stage] = await Promise.all([composeHero(want), playIntro(want)]);
+        setHero(url); shown = want;
+        await $("heroImg").decode().catch(() => {});
+        stage.remove(); return;
+      }
       const url = await composeHero(want);
       const nw = $("heroNew");
-      if (fresh && heroUrl) {
+      if (fresh) {
         nw.src = url; await nw.decode().catch(() => {});
         nw.classList.add("show");
         await new Promise(r => setTimeout(r, 1500));
