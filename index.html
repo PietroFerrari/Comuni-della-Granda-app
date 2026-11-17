@@ -224,6 +224,9 @@ form { display: flex; gap: 6px; align-items: stretch; }
 .sheet .x { width: 34px; height: 34px; padding: 0; border-radius: 50%; background: transparent; color: var(--muted); border: 0; font-size: 24px; line-height: 1; }
 .set-row { display: grid; gap: 6px; }
 .set-label { font-family: var(--display); font-size: 15px; color: var(--muted); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 3px; border-radius: 11px; background: var(--bg); }
+.seg button { padding: 7px 4px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-family: var(--display); font-size: 15px; box-shadow: none; }
+.seg button[aria-checked="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 4px #0003; }
 button.wide { width: 100%; padding: 10px 12px; font-size: 15px; }
 button.danger { color: var(--missing); border-color: color-mix(in srgb, var(--missing) 55%, transparent); }
 button.danger.armed { background: var(--missing); color: #fff; border-color: var(--missing); }
@@ -312,6 +315,8 @@ button.danger.armed { background: var(--missing); color: #fff; border-color: var
 .li-row input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 7px 9px; border-radius: 9px; border: 1.5px solid var(--fill); background: var(--bg); color: var(--fg); }
 .li-row input:focus { outline: none; border-color: var(--found); }
 .li-row button { padding: 7px 11px; }
+.li-row .li-x { flex: none; width: 32px; padding: 0; border: none; background: none; color: var(--muted); font-size: 24px; line-height: 1; cursor: pointer; }
+.li-row .li-x:hover { color: var(--fg); }
 .li-err { font-size: 13px; color: var(--missing); min-height: 0; }
 .shake { animation: shake .22s; }
 /* risposta sbagliata: campo e "Prova" rossi, con lo sfondo rosso scuro, e una scossa */
@@ -356,6 +361,7 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
 @media (prefers-reduced-motion: reduce) { .bar i, .track, .track::after, .chev { transition: none; } }
 </style>
 
+<script>window.__hostTheme=document.documentElement.getAttribute("data-theme");try{var t=localStorage.getItem("comuni-cuneo-tema");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
 </head><body>
 <div id="map" role="application" aria-label="Mappa dei comuni della provincia di Cuneo"></div>
 
@@ -376,6 +382,12 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
           <svg class="ico-on" hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19.5 5.5a9 9 0 0 1 0 13"/></svg>
         </button>
         <input type="range" id="hVol" min="0" max="1" step="0.05" value="0.6" aria-label="Volume della musica">
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">Aspetto</span>
+      <div class="seg" id="themeSeg" role="radiogroup" aria-label="Aspetto">
+        <button type="button" role="radio" data-theme-v="auto">Automatico</button><button type="button" role="radio" data-theme-v="light">Chiaro</button><button type="button" role="radio" data-theme-v="dark">Scuro</button>
       </div>
     </div>
     <button type="button" class="ghost wide" id="tTunes">Brani musicali</button>
@@ -968,7 +980,7 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
   });
   // immagine satellitare, sopra il rilievo e in parte trasparente: si accende insieme al rilievo
   const sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-    maxZoom: 18, opacity: 0.65, attribution: "Satellite © Esri, Maxar, Earthstar Geographics"
+    maxZoom: 18, opacity: 0.85, attribution: "Satellite © Esri, Maxar, Earthstar Geographics"
   });
   let tileFail = 0, tileOk = 0;
   terrain.on("tileerror", () => { tileFail++; checkTiles(); });
@@ -984,7 +996,7 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
     return {
       color: css("--line"), opacity: 0.85,
       fillColor: f ? css("--found") : (showMissing ? css("--missing") : css("--fill")),
-      fillOpacity: terrainOn ? (f ? 0.45 : (showMissing ? 0.3 : 0.12)) : (f ? 0.62 : (showMissing ? 0.32 : 0.9)),
+      fillOpacity: terrainOn ? (f ? 0.25 : (showMissing ? 0.3 : 0.12)) : (f ? 0.62 : (showMissing ? 0.32 : 0.9)),
       weight: terrainOn ? 1.1 : 0.8
     };
   }
@@ -1173,6 +1185,19 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
   addEventListener("resize", () => { if (!$("listbox").hidden) placeList(); });
 
   matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", restyleAll);
+
+  /* Aspetto: automatico (dispositivo), chiaro o scuro */
+  const KEY_THEME = "comuni-cuneo-tema", hostTheme = window.__hostTheme;
+  function setTheme(v, keep) {
+    const r = document.documentElement;
+    if (v === "light" || v === "dark") r.setAttribute("data-theme", v);
+    else if (hostTheme) r.setAttribute("data-theme", hostTheme); else r.removeAttribute("data-theme");
+    document.querySelectorAll("#themeSeg button").forEach(b => b.setAttribute("aria-checked", b.dataset.themeV === v));
+    if (keep) try { if (v === "auto") localStorage.removeItem(KEY_THEME); else localStorage.setItem(KEY_THEME, v); } catch (e) {}
+  }
+  let theme0 = "auto"; try { theme0 = localStorage.getItem(KEY_THEME) || "auto"; } catch (e) {}
+  setTheme(theme0);
+  document.querySelectorAll("#themeSeg button").forEach(b => b.onclick = () => setTheme(b.dataset.themeV, true));
   new MutationObserver(restyleAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
   /* Musica */
@@ -1211,6 +1236,9 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
   /* Scheda del comune già trovato: stemma, abitanti e curiosità */
   const infoPop = L.popup({ className: "info-pop", autoPan: true, maxWidth: 320, minWidth: 0 });
   const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const selStyle = () => ({ color: css("--flash"), weight: 3, fillColor: css("--flash"), fillOpacity: terrainOn ? 0.25 : 0.45 });
+  let infoTarget = null;
+  infoPop.on("remove", () => { if (infoTarget) { const t = infoTarget; infoTarget = null; restyle(t); } });
   function showInfo(n) {
     const d = INFO[n]; if (!d) { say(n, "ok"); return; }
     if (small() && !$("options").hidden) setOptions(false);
@@ -1229,13 +1257,15 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
     infoPop.options.autoPanPaddingTopLeft = L.point(10, top);
     infoPop.options.autoPanPaddingBottomRight = L.point(10, 10);
     infoPop.setLatLng(layers.get(n).getBounds().getCenter()).setContent(box).openOn(map);
+    if (infoTarget && infoTarget !== n) restyle(infoTarget);
+    infoTarget = n; layers.get(n).setStyle(selStyle()); layers.get(n).bringToFront();
     if (img) img.onload = () => infoPop.update();
   }
 
   /* Modalità "Proprio lì": casella sopra il comune toccato */
   const liBox = document.createElement("form");
   liBox.className = "li-form"; liBox.autocomplete = "off";
-  liBox.innerHTML = '<div class="li-row"><input id="liGuess" aria-label="Nome del comune" autocapitalize="words" spellcheck="false" enterkeyhint="go" placeholder="Nome del comune"><button type="submit">Prova</button></div><div class="li-err" id="liErr" aria-live="polite"></div>';
+  liBox.innerHTML = '<div class="li-row"><input id="liGuess" aria-label="Nome del comune" autocapitalize="words" spellcheck="false" enterkeyhint="go" placeholder="Nome del comune"><button type="submit">Prova</button><button type="button" class="li-x" aria-label="Chiudi">×</button></div><div class="li-err" id="liErr" aria-live="polite"></div>';
   let target = null;
   const pop = L.popup({ className: "li-pop", closeButton: false, autoPan: true, maxWidth: 400, minWidth: 0 });
   function askHere(n) {
@@ -1244,7 +1274,7 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
     if (small() && !$("options").hidden) setOptions(false);     // sul telefono il pannello si chiude per lasciare spazio
     setList(false);
     const l = layers.get(n);
-    l.setStyle({ color: css("--flash"), weight: 3, fillColor: css("--flash"), fillOpacity: 0.45 }); l.bringToFront();
+    l.setStyle(selStyle()); l.bringToFront();
     const top = $("panel").getBoundingClientRect().bottom + 10;
     pop.options.autoPanPaddingTopLeft = L.point(10, top);
     pop.setLatLng(l.getBounds().getCenter()).setContent(liBox).openOn(map);
@@ -1253,6 +1283,7 @@ fetch("comuni.json").then(r => r.json()).then(DATA => {
     pop.update();
     setTimeout(() => inp.focus(), 60);
   }
+  liBox.querySelector(".li-x").onclick = () => map.closePopup(pop);
   map.on("popupclose", () => { if (target) { const t = target; target = null; restyle(t); } });
   liBox.addEventListener("submit", e => {
     e.preventDefault();
@@ -1390,7 +1421,7 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => {
     const chk = () => reg.update().catch(() => {});
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") chk(); });
-    setInterval(chk, 60 * 60 * 1000);
+    setInterval(chk, 24 * 60 * 60 * 1000);
   }).catch(() => {});
 }
 </script>
