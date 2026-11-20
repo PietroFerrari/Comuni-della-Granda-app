@@ -209,10 +209,13 @@ body:not(.mode-li) .leaflet-bottom { bottom: calc(env(safe-area-inset-bottom, 0p
   text-shadow: 0 0 3px var(--surface), 0 0 3px var(--surface), 0 0 2px var(--surface);
 }
 .lbl::before { display: none; }
+.lbl-layer { position: absolute; left: 0; top: 0; pointer-events: none; }
+.lbl-layer .lbl { position: absolute; left: 0; top: 0; white-space: nowrap; line-height: 1.1; }
+.leaflet-zoom-anim .lbl-layer { visibility: hidden; }   /* durante lo zoom animato i nomi si nascondono e ricompaiono al posto giusto */
 .lbl.miss { color: var(--missing); }
 .hide-found .lbl:not(.miss), .far .lbl { display: none; }
 .leaflet-control-attribution { font-size: 10px; }
-.terrain-on .leaflet-overlay-pane svg { mix-blend-mode: multiply; }
+.terrain-on .leaflet-overlay-pane svg, .terrain-on .leaflet-overlay-pane canvas { mix-blend-mode: multiply; }
 .terrain-on .leaflet-tile-pane { opacity: var(--relief-opacity); }
 .leaflet-bar a { background: var(--surface); color: var(--fg); border-color: var(--fill); }
 .leaflet-bottom.leaflet-right { margin-bottom: env(safe-area-inset-bottom, 0px); margin-right: env(safe-area-inset-right, 0px); }
@@ -1006,7 +1009,9 @@ function topo2geo(t) {
 }
 fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
   const $ = id => document.getElementById(id);
-  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  // le variabili CSS si leggono una volta sola (rileggerle per ogni comune rallentava molto i telefoni più lenti)
+  const CV = new Map();
+  const css = n => { if (!CV.has(n)) CV.set(n, getComputedStyle(document.documentElement).getPropertyValue(n).trim()); return CV.get(n); };
   const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]/g, "");
   const KEY_OPT = "comuni-cuneo-opzioni-aperte";
   const MODES = { sacco: "comuni-cuneo-trovati", li: "comuni-cuneo-trovati-li" };
@@ -1043,11 +1048,13 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
     };
   }
 
+  const LP = new Map();            // punto dove scrivere il nome (calcolato in anticipo, dentro il comune)
   const geo = L.geoJSON(DATA, {
+    renderer: L.canvas({ padding: 0.4, tolerance: 4 }),   // un'unica tela invece di 247 forme SVG: molto più leggero
     style: f => style(f.properties.n),
     onEachFeature: (f, layer) => {
       const n = f.properties.n;
-      byKey.set(norm(n), n); layers.set(n, layer);
+      byKey.set(norm(n), n); layers.set(n, layer); if (f.properties.lp) LP.set(n, f.properties.lp);
       layer.on("click", e => {
         if (found.has(n)) { L.DomEvent.stopPropagation(e); showInfo(n); return; }
         if (mode === "li") { L.DomEvent.stopPropagation(e); askHere(n); }
@@ -1065,12 +1072,19 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
       : { paddingTopLeft: [6, top], paddingBottomRight: [6, 6] });
   }
 
+  // nomi sulla mappa: si ricrea un'etichetta solo se cambia davvero (trovato / mancante / niente)
+  // tutti i nomi stanno in un unico livello leggero: niente misure del testo, si spostano solo a fine zoom
+  const LBL = new Map(), lblBox = L.DomUtil.create("div", "lbl-layer", map.getPane("tooltipPane"));
+  function placeLbl(n, el) { const p = map.latLngToLayerPoint(LP.get(n) || layers.get(n).getCenter()); el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -50%)`; }
   function label(n) {
-    const l = layers.get(n);
-    l.unbindTooltip();
-    if (found.has(n)) l.bindTooltip(n, { permanent: true, direction: "center", className: "lbl" }).openTooltip();
-    else if (showMissing) l.bindTooltip(n, { permanent: true, direction: "center", className: "lbl miss" }).openTooltip();
+    const st = found.has(n) ? 1 : (showMissing ? 2 : 0), c = LBL.get(n);
+    if (c && c.st === st) return;
+    if (c && c.el) c.el.remove();
+    let el = null;
+    if (st) { el = document.createElement("span"); el.className = st === 1 ? "lbl" : "lbl miss"; el.textContent = n; placeLbl(n, el); lblBox.append(el); }
+    LBL.set(n, { st, el });
   }
+  map.on("zoomend viewreset", () => LBL.forEach((c, n) => c.el && placeLbl(n, c.el)));
   function restyle(n) { layers.get(n).setStyle(style(n)); label(n); }
   function restyleAll() { layers.forEach((_, n) => restyle(n)); }
 
@@ -1302,7 +1316,7 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
   })();
   addEventListener("resize", () => { if (!$("listbox").hidden) placeList(); });
 
-  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", restyleAll);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => { CV.clear(); restyleAll(); });
 
   /* Aspetto: automatico (dispositivo), chiaro o scuro */
   const KEY_THEME = "comuni-cuneo-tema", hostTheme = window.__hostTheme;
@@ -1316,7 +1330,7 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
   let theme0 = "auto"; try { theme0 = localStorage.getItem(KEY_THEME) || "auto"; } catch (e) {}
   setTheme(theme0);
   document.querySelectorAll("#themeSeg button").forEach(b => b.onclick = () => setTheme(b.dataset.themeV, true));
-  new MutationObserver(restyleAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  new MutationObserver(() => { CV.clear(); restyleAll(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 
   /* Musica */
   let mi = 0, playing = false, started = false, vol = 0.6;
@@ -1632,6 +1646,7 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
     document.body.classList.toggle("mode-li", m === "li");
     map.closePopup(); setList(false); setMissing(false); $("confirm").hidden = true;
     $("home").hidden = true;
+    if (!inGame) { try { history.pushState({ game: 1 }, ""); } catch (e) {} inGame = true; }
     restyleAll(); renderCount(); updateLabelZoom();
     requestAnimationFrame(() => { map.invalidateSize(); fitAll(); });
     if (m === "sacco" && !small()) $("guess").focus();
@@ -1661,7 +1676,18 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
     restyleAll(); renderCount(); renderHome(); disarm();
   };
   $("home").addEventListener("click", e => { if (!e.target.closest(".sheet, .gear")) openSheet(null); });
-  $("tMenu").onclick = () => { map.closePopup(); setList(false); renderHome(); showModes(false); $("home").hidden = false; };
+  function goHome() { map.closePopup(); setList(false); renderHome(); showModes(false); $("home").hidden = false; }
+  // "Indietro" del telefono (e del browser) dalla mappa torna alla schermata iniziale invece di chiudere l'app
+  let inGame = false;
+  $("tMenu").onclick = () => { if (inGame && history.state && history.state.game) history.back(); else goHome(); };
+  addEventListener("popstate", () => { if (inGame) { inGame = false; goHome(); } });
+  // Esc sul computer: chiude prima una scheda aperta, altrimenti torna alla schermata iniziale
+  addEventListener("keydown", e => {
+    if (e.key !== "Escape" || $("home").hidden === false) return;
+    if (map._popup && map.hasLayer(map._popup)) { map.closePopup(); return; }
+    if (!$("listbox").hidden) { setList(false); return; }
+    $("tMenu").onclick();
+  });
 
   if (small()) $("guess").placeholder = "Comune…";
   let optOpen = !small();
