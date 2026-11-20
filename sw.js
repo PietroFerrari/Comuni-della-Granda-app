@@ -1,4 +1,4 @@
-const APP = "comuni-cn-v105", TILES = "comuni-cn-tiles";
+const APP = "comuni-cn-v113", TILES = "comuni-cn-tiles";
 const SHELL = ["./", "index.html", "comuni.json", "leaflet.js", "leaflet.css", "manifest.webmanifest",
   "hero.jpg", "eggs/pellegrino.webp", "eggs/erbi.webp", "eggs/carosso2.webp", "eggs/ferrari.webp", "eggs/parrinello.webp", "eggs/carosso1.webp", "eggs/cavallo.webp", "eggs/barale.webp", "eggs/caroni.webp", "eggs/crosta.webp", "eggs/cavallera.webp", "eggs/baratteri.webp", "eggs/chiarpenello.webp",
   "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png",
