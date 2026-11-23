@@ -10,14 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="I Comuni della Granda">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} [hidden]{display:none!important}</style>
 <title>I Comuni della Granda</title>
-<link rel="stylesheet" href="leaflet.css">
-<style>@font-face{font-family:"IM Fell English";font-weight:400;font-display:swap;src:url(fonts/im-fell-english-latin-400-normal.woff2) format("woff2")}
-@font-face{font-family:"Barlow Condensed";font-weight:500;font-display:swap;src:url(fonts/barlow-condensed-latin-500-normal.woff2) format("woff2")}
-@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-latin-600-normal.woff2) format("woff2")}
-@font-face{font-family:"Barlow Condensed";font-weight:700;font-display:swap;src:url(fonts/barlow-condensed-latin-700-normal.woff2) format("woff2")}
-@font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(fonts/barlow-latin-400-normal.woff2) format("woff2")}
-@font-face{font-family:"Barlow";font-weight:500;font-display:swap;src:url(fonts/barlow-latin-500-normal.woff2) format("woff2")}
-@font-face{font-family:"Barlow";font-weight:600;font-display:swap;src:url(fonts/barlow-latin-600-normal.woff2) format("woff2")}
+<style>/*LEAFLET_CSS*/.app-ver { margin: 4px 0 0; text-align: left; font-size: 12px; color: var(--muted, #888); opacity: .8; }
 </style>
 <style>
 /* Layout: mappa a tutto schermo; un unico pannello compatto in alto (campo sempre visibile, opzioni richiudibili, elenco a tendina) */
@@ -421,6 +414,7 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
     </div>
     <button type="button" class="ghost wide" id="tTunes">Brani musicali</button>
     <button type="button" class="ghost wide danger" id="tWipe">Azzera tutti i progressi</button>
+    <p class="app-ver">I Comuni della Granda - v168</p>
   </div>
   <div class="sheet" id="tunes" hidden role="dialog" aria-label="Brani musicali">
     <div class="sheet-head"><h3>Brani musicali</h3><button type="button" class="x" data-close aria-label="Chiudi">×</button></div>
@@ -1393,7 +1387,9 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
     // e se è più alta del posto disponibile si scorre al suo interno, così la × resta raggiungibile
     const top = $("panel").querySelector(".progress").getBoundingClientRect().bottom + 27;
     const bottom = mode === "li" ? 10 : innerHeight - $("form").getBoundingClientRect().top + 10;
-    infoPop.options.autoPanPaddingTopLeft = L.point(10, top);
+    // su schermo largo, con le opzioni aperte a sinistra, la scheda resta alla loro destra
+    const left = !$("options").hidden ? $("panel").getBoundingClientRect().right + 10 : 10;
+    infoPop.options.autoPanPaddingTopLeft = L.point(left, top);
     infoPop.options.autoPanPaddingBottomRight = L.point(10, bottom);
     infoPop.options.maxHeight = Math.max(150, innerHeight - top - bottom - 24);
     infoPop.setLatLng(layers.get(n).getBounds().getCenter()).setContent(box).openOn(map);
@@ -1698,28 +1694,34 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
     else if (!$("settings").hidden) openSheet(null);
     else if (!$("homeCard").hidden) showModes(false);
   }
-  /* Una voce nella cronologia per ogni passo indietro disponibile, aggiunta solo dopo un tocco/tasto:
-     Chrome su Android salta le voci create senza interazione (es. ricreate dentro popstate) e chiudeva l'app. */
-  const steps = () => inGame ? 1 + (gameWindows() ? 1 : 0)
+  /* Voci nella cronologia per i passi indietro, aggiunte solo subito dopo un tocco/tasto:
+     Chrome su Android salta le voci create senza interazione (es. dopo un trascinamento o dentro popstate)
+     e chiudeva l'app. In gioco c'è sempre una riserva di voci (ricaricata a ogni tocco), così anche
+     le finestre aperte con un gesto si chiudono senza doverne aggiungere altre. */
+  const steps = () => inGame ? 6
     : !$("tunes").hidden ? 2 : (!$("settings").hidden || !$("homeCard").hidden) ? 1 : 0;
   const depthOf = st => (st && st.d) || 0;
   let depth = depthOf(history.state), skipPop = 0;
-  function syncBack() {
+  function syncBack(user) {
     const need = steps();
-    if (need > depth) { try { while (depth < need) history.pushState({ d: ++depth }, ""); } catch (e) {} }
+    if (need > depth) { if (user) try { while (depth < need) history.pushState({ d: ++depth }, ""); } catch (e) {} }
     else if (need < depth && !skipPop) { skipPop = 1; history.go(need - depth); }
   }
   addEventListener("popstate", e => {
     depth = depthOf(e.state);
     if (skipPop) { skipPop = 0; syncBack(); return; }
+    if (inGame) {
+      // un passo per volta: prima si chiudono le finestre, poi si torna alla schermata iniziale;
+      // se non restano voci si torna comunque alla schermata iniziale invece di uscire dall'app
+      const w = gameWindows();
+      if (w) goBack();
+      if (!w || depth === 0) { if (gameWindows()) goBack(); goBack(); setTimeout(syncBack, 0); }
+      return;
+    }
     let guard = 4; while (steps() > depth && guard--) goBack();
   });
-  addEventListener("click", () => setTimeout(syncBack, 0), true);
-  // anche le finestre aperte con un gesto (es. elenco trascinato giù) o con un piccolo ritardo dopo il tocco
-  addEventListener("touchend", () => setTimeout(syncBack, 0), true);
-  map.on("popupopen", () => setTimeout(syncBack, 0));
-  new MutationObserver(() => setTimeout(syncBack, 0)).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["hidden"] });
-  addEventListener("keydown", e => { if (e.key === "Escape") { e.stopPropagation(); goBack(); } setTimeout(syncBack, 0); }, true);
+  addEventListener("click", () => setTimeout(() => syncBack(true), 0), true);
+  addEventListener("keydown", e => { if (e.key === "Escape") { e.stopPropagation(); goBack(); } setTimeout(() => syncBack(true), 0); }, true);
   setTimeout(syncBack, 0);
   $("tMenu").onclick = () => { inGame = false; goHome(); };
 
@@ -1729,7 +1731,11 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
   setOptions(optOpen, true);
   fitAll();
   map.setMinZoom(map.getZoom() - 1);
-  map.setMaxBounds(geo.getBounds().pad(0.4));
+  // con una scheda aperta la mappa può scorrere oltre i bordi, così la scheda non resta mai sotto il pannello in alto
+  const maxB = geo.getBounds().pad(0.4);
+  map.setMaxBounds(maxB);
+  map.on("popupopen", () => map.setMaxBounds(null));
+  map.on("popupclose", () => setTimeout(() => { if (!map._popup || !map.hasLayer(map._popup)) map.setMaxBounds(maxB); }, 0));
 
   load(); restyleAll(); renderCount(); updateLabelZoom(); renderHome();
 });
