@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2f7d5b">
+<meta name="theme-color" content="#2b5c9e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -22,19 +22,19 @@
 <style>
 /* Layout: mappa a tutto schermo; un unico pannello compatto in alto (campo sempre visibile, opzioni richiudibili, elenco a tendina) */
 :root {
-  --bg: #eef0ec;
-  --surface: #fbfcfa;
-  --fg: #1f2620;
-  --muted: #5f6b62;
-  --line: #4a554d;
-  --fill: #dfe4dc;
-  --found: #2f7d5b;
-  --found-soft: #2f7d5b26;
+  --bg: #eceff3;
+  --surface: #fafbfd;
+  --fg: #1d2430;
+  --muted: #5c6777;
+  --line: #485465;
+  --fill: #dce3ec;
+  --found: #2b5c9e;
+  --found-soft: #2b5c9e26; --on-found: #ffffff;
   --flash: #e3a52b;
   --missing: #b8473a;
   --knob: #ffffff;
   --cn-red: #c0272d; --cn-white: #ffffff; --cn-tint: #fbe7e6; --cn-line: #e9b4b2;
-  --shadow: 0 4px 18px #1f262026;
+  --shadow: 0 4px 18px #1d243026;
   --relief-opacity: 1;
   --found-relief: .5;
   --line-relief: #f3f0e6; --w-relief: 0.8; --w-relief-near: 1.5;
@@ -43,13 +43,13 @@
   --body: "Barlow", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #161b18; --surface: #1f2622; --fg: #e8ece7; --muted: #9aa69d; --line: #a9b5ac;
-  --fill: #333d37; --found: #4fb386; --found-soft: #4fb38630; --flash: #f0b947; --missing: #e0715f;
-  --knob: #f4f6f3; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .25; --line-relief: #a9b5ac; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark } }
+  --bg: #141a22; --surface: #1c232d; --fg: #e6ebf1; --muted: #97a3b2; --line: #a7b3c2;
+  --fill: #303a48; --found: #6ea0e0; --found-soft: #6ea0e030; --on-found: #0f1b2c; --flash: #f0b947; --missing: #e0715f;
+  --knob: #f3f5f9; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .25; --line-relief: #a7b3c2; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #161b18; --surface: #1f2622; --fg: #e8ece7; --muted: #9aa69d; --line: #a9b5ac;
-  --fill: #333d37; --found: #4fb386; --found-soft: #4fb38630; --flash: #f0b947; --missing: #e0715f;
-  --knob: #f4f6f3; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .25; --line-relief: #a9b5ac; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark }
+  --bg: #141a22; --surface: #1c232d; --fg: #e6ebf1; --muted: #97a3b2; --line: #a7b3c2;
+  --fill: #303a48; --found: #6ea0e0; --found-soft: #6ea0e030; --on-found: #0f1b2c; --flash: #f0b947; --missing: #e0715f;
+  --knob: #f3f5f9; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .25; --line-relief: #a7b3c2; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark }
 
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -71,7 +71,7 @@ h1 { margin: 0 2px; font-family: var(--display); font-weight: 400; font-size: 20
 
 button {
   font: inherit; font-family: var(--display); font-weight: 400; font-size: 16px; cursor: pointer; border: 0; border-radius: 10px;
-  padding: 8px 12px; background: var(--found); color: #fff;
+  padding: 8px 12px; background: var(--found); color: var(--on-found);
 }
 button:focus-visible, #guess:focus-visible { outline: 2px solid var(--flash); outline-offset: 2px; }
 button.ghost { background: transparent; color: var(--fg); border: 1.5px solid var(--fill); padding: 6px 10px; font-size: 16px; }
@@ -82,6 +82,8 @@ form { display: flex; gap: 6px; align-items: stretch; }
   border-radius: 10px; border: 1.5px solid var(--fill); background: var(--bg); color: var(--fg);
 }
 #guess:focus { outline: none; border-color: var(--found); }
+/* caselle del nome: una riga che diventa due se il nome è lungo */
+#guess, #liGuess { display: block; resize: none; overflow: hidden; line-height: 1.25; overflow-wrap: anywhere; }
 
 .icon-btn {
   display: inline-flex; align-items: center; gap: 2px; padding: 0 8px;
@@ -117,16 +119,13 @@ form { display: flex; gap: 6px; align-items: stretch; }
 .actions { display: grid; gap: 6px; justify-items: start; }
 .actions > button { min-width: 11.5em; }
 /* pulsanti con la bandierina rossa e bianca di Cuneo */
-.flagbtn { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 16em; height: 40px; padding: 0 12px 0 0; border-radius: 10px;
-  border: 1.5px solid #d9b9b6; background: var(--surface); color: var(--fg); overflow: hidden; text-align: left; font-size: 17px; }
+.flagbtn { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 16em; height: 40px; padding: 0 12px 0 0; border-radius: 0 0 10px 0;
+  border: 0; border-left: 1.5px solid #d9b9b6; border-bottom: 1.5px solid #d9b9b6; background: var(--surface); color: var(--fg); overflow: hidden; text-align: left; font-size: 17px; }
 .flagbtn .flag { flex: none; width: 38px; height: 100%; display: grid; place-items: center; border-right: 1.5px solid #d9b9b6;
   background: linear-gradient(180deg, #c8302b 0 50%, #fff 50%); }
 .flagbtn .flag svg { width: 19px; height: 19px; color: #fff; filter: drop-shadow(0 1px 1px #0008); }
 .flagbtn .lbl { font-family: var(--display); font-size: 17px; line-height: 1; }
 .flagbtn.on { background: color-mix(in srgb, #c8302b 10%, var(--surface)); }
-.flagbtn.home { border-color: var(--fill); }
-.flagbtn.home .flag { background: color-mix(in srgb, var(--found) 14%, var(--surface)); border-color: var(--fill); }
-.flagbtn.home .flag svg { color: var(--found); filter: none; }
 
 .confirm { display: grid; gap: 8px; width: 100%; box-sizing: border-box; font-size: 14px; padding: 8px 10px; border-radius: 10px; background: var(--bg); }
 .confirm div { display: flex; gap: 8px; }
@@ -141,7 +140,7 @@ form { display: flex; gap: 6px; align-items: stretch; }
 /* Musica */
 .music { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; background: var(--bg); }
 .music .icon-btn { width: 34px; height: 34px; padding: 0; justify-content: center; border-radius: 50%; flex: none; }
-.music #mPlay[aria-pressed="true"] { background: var(--found); color: #fff; border-color: var(--found); }
+.music #mPlay[aria-pressed="true"] { background: var(--found); color: var(--on-found); border-color: var(--found); }
 .music .icon-btn svg { width: 20px; height: 20px; }
 #mVol { flex: 1; min-width: 0; accent-color: var(--found); transform-origin: left center; }
 .playing-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--found); margin-left: 4px; vertical-align: middle; animation: pulse 1.2s infinite; }
@@ -150,14 +149,6 @@ form { display: flex; gap: 6px; align-items: stretch; }
 
 /* Riga in basso: elenco + punteggio */
 .foot { display: flex; align-items: center; gap: 10px; }
-.list-btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px 5px 10px;
-  background: transparent; color: var(--fg); border: 1.5px solid var(--fill); font-weight: 500; font-size: 14px; white-space: nowrap;
-}
-.list-btn[aria-expanded="true"] { border-color: var(--found); color: var(--found); }
-.list-btn .chev { width: 12px !important; height: 12px !important; }
-.list-btn.side .chev { transform: rotate(-90deg); }
-.list-btn.side[aria-expanded="true"] .chev { transform: rotate(90deg); }
 .bar { flex: 1 1 0; height: 4px; border-radius: 2px; background: var(--fill); overflow: hidden; min-width: 0; transition: flex-grow .4s ease, opacity .3s; }
 .collapsed .bar { flex-grow: 0; opacity: 0; }
 .bar i { display: block; height: 100%; width: 0; background: var(--found); transition: width .4s; }
@@ -190,10 +181,12 @@ body:not(.mode-li) .leaflet-bottom { bottom: calc(env(safe-area-inset-bottom, 0p
   overflow-y: auto; overscroll-behavior: contain;
 }
 .listwrap { position: absolute; z-index: 1000; top: calc(env(safe-area-inset-top, 0px) + 10px); right: max(12px, env(safe-area-inset-right, 0px)); }
-.listwrap .list-btn { background: var(--surface); box-shadow: var(--shadow); border-color: transparent; height: 40px; padding: 0 10px 0 12px; }
-.listwrap .list-btn svg.ico { width: 18px; height: 18px; }
+.listwrap .flagbtn { width: auto; max-width: none; gap: 8px; padding-right: 10px; box-shadow: var(--shadow); white-space: nowrap; }
+.listwrap .flagbtn .chev { width: 12px; height: 12px; flex: none; }
+.listwrap .flagbtn[aria-expanded="true"] { background: color-mix(in srgb, #c8302b 10%, var(--surface)); }
+.listwrap .flagbtn[aria-expanded="true"] .chev { transform: rotate(180deg); }
 .listbox { right: 0; top: calc(100% + 6px); width: min(300px, calc(100vw - 24px)); }
-@media (max-width: 599px) { .list-btn .txt { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } .listwrap .list-btn { padding: 0 8px; } }
+@media (max-width: 599px) { .listwrap .flagbtn .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } .listwrap .flagbtn { gap: 0; padding-right: 0; } .listwrap .flagbtn .chev { margin: 0 8px; } }
 /* il pannello lascia spazio al pulsante dell'elenco */
 @media (max-width: 899px) { .panel { right: calc(max(12px, env(safe-area-inset-right, 0px)) + 62px); max-width: 420px; margin: 0; } }
 .listbox ul { list-style: none; margin: 0; padding: 6px 0; columns: 2; column-gap: 0; }
@@ -224,7 +217,7 @@ body:not(.mode-li) .leaflet-bottom { bottom: calc(env(safe-area-inset-bottom, 0p
 #home {
   position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center;
   padding: calc(env(safe-area-inset-top, 0px) + 16px) max(16px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 16px) max(16px, env(safe-area-inset-left, 0px));
-  background: #22302c; overflow: hidden; overflow: clip;
+  background: #1a2638; overflow: hidden; overflow: clip;
 }
 #home::before { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, #0000 35%, #0007); pointer-events: none; }
 .hero-blur { position: absolute; inset: -40px; background: center / cover no-repeat; filter: blur(26px) brightness(.62) saturate(1.1); }
@@ -251,6 +244,16 @@ html.intro #home .home-stage, html.intro #home .gear { opacity: 0; scale: .82; p
   width: min(340px, calc(100% - 24px)); max-height: calc(100% - 90px); overflow-y: auto; box-sizing: border-box;
   background: var(--surface); color: var(--fg); border-radius: 16px; box-shadow: 0 18px 50px #0007; padding: 14px; display: grid; gap: 12px; animation: pop .2s ease-out; }
 .app-ver { margin: 4px 0 0; text-align: left; font-size: 12px; color: var(--muted, #888); opacity: .8; }
+/* conferma di uscita: al centro, con lo sfondo scurito */
+.exit-ask { position: fixed; inset: 0; z-index: 100000; display: grid; place-items: center; padding: 24px;
+  background: rgba(10, 13, 20, .55); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.exit-card { background: var(--surface); color: var(--fg); border-radius: 16px; padding: 22px 20px 18px;
+  border: 4px solid var(--cn-red); box-shadow: inset 0 0 0 3px var(--cn-white), inset 0 0 0 4.5px var(--cn-line), 0 10px 40px #0008;
+  display: grid; gap: 16px; justify-items: center; width: min(320px, 100%); text-align: center; }
+.exit-card p { margin: 0; font-family: var(--display); font-size: 26px; }
+.exit-btns { display: grid; gap: 10px; width: 100%; justify-items: stretch; }
+.exit-btns .flagbtn { max-width: none; }
+.exit-card small { color: var(--muted); font-size: 13px; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; }
 .sheet h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 22px; }
 .sheet .x { width: 34px; height: 34px; padding: 0; border-radius: 50%; background: transparent; color: var(--muted); border: 0; font-size: 24px; line-height: 1; }
@@ -275,12 +278,12 @@ button.danger.armed { background: var(--missing); color: #fff; border-color: var
 }
 .nduma-box { display: grid; justify-items: center; gap: 12px; }
 .nduma-box h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(30px, 8.4vw, 42px); line-height: 1.05; white-space: nowrap;
-  color: #fff; -webkit-text-stroke: 1px #0b1a13; paint-order: stroke fill;
-  text-shadow: 0 0 2px #0b1a13, 0 0 2px #0b1a13, 0 1px 3px #000a, 0 0 14px #0007; }
+  color: #fff; -webkit-text-stroke: 1px #0a1322; paint-order: stroke fill;
+  text-shadow: 0 0 2px #0a1322, 0 0 2px #0a1322, 0 1px 3px #000a, 0 0 14px #0007; }
 .nduma {
   font-family: var(--display); font-weight: 400; font-size: clamp(32px, 8.5vw, 42px); letter-spacing: .02em; line-height: 1;
   padding: 10px 34px 12px; border-radius: 14px; cursor: pointer; color: #fff;
-  background: rgba(16, 66, 44, .14); border: 1.5px solid rgba(255,255,255,.35);
+  background: rgba(18, 48, 96, .16); border: 1.5px solid rgba(255,255,255,.35);
   backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px);
   text-shadow: 0 1px 3px #000c; box-shadow: 0 6px 18px #0003;
 }
@@ -288,8 +291,8 @@ button.danger.armed { background: var(--missing); color: #fff; border-color: var
 .home-card .pick { margin: -4px 0 0; font-family: var(--display); font-size: 21px; }
 /* finestra delle modalità: niente sfondo, scritte bianche col contorno; le due modalità restano su un fondo chiaro trasparente */
 #home .home-card { background: none; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; padding: 0; }
-#home .home-card h2, #home .home-card .pick { color: #fff; -webkit-text-stroke: 1px #0b1a13; paint-order: stroke fill;
-  text-shadow: 0 0 2px #0b1a13, 0 0 2px #0b1a13, 0 1px 3px #000a, 0 0 14px #0007; text-align: center; }
+#home .home-card h2, #home .home-card .pick { color: #fff; -webkit-text-stroke: 1px #0a1322; paint-order: stroke fill;
+  text-shadow: 0 0 2px #0a1322, 0 0 2px #0a1322, 0 1px 3px #000a, 0 0 14px #0007; text-align: center; }
 #home .home-card h2 { font-size: clamp(30px, 8.4vw, 42px); }
 #home .mode { background: color-mix(in srgb, var(--bg) 62%, transparent); border-color: color-mix(in srgb, var(--fill) 50%, transparent);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-shadow: 0 6px 18px #0003; }
@@ -341,26 +344,28 @@ button.danger.armed { background: var(--missing); color: #fff; border-color: var
 .li-pop .leaflet-popup-content { margin: 8px; }
 .li-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; width: min(260px, calc(100vw - 80px)); box-sizing: border-box; }
 .li-form label { font-family: var(--display); font-weight: 400; font-size: 15px; }
-.li-row { display: flex; gap: 6px; }
-.li-row input { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 7px 9px; border-radius: 9px; border: 1.5px solid var(--fill); background: var(--bg); color: var(--fg); }
-.li-row input:focus { outline: none; border-color: var(--found); }
+.li-row { display: flex; gap: 6px; align-items: flex-start; }
+.li-row button { align-self: stretch; max-height: 40px; }
+.li-row textarea { flex: 1; min-width: 0; font: inherit; font-size: 16px; padding: 7px 9px; border-radius: 9px; border: 1.5px solid var(--fill); background: var(--bg); color: var(--fg); }
+.li-row textarea { flex: none; width: 150px; }
+.li-row textarea:focus { outline: none; border-color: var(--found); }
 .li-row button { padding: 7px 11px; }
 .li-row .li-x { flex: none; width: 32px; padding: 0; border: none; background: none; color: var(--muted); font-size: 24px; line-height: 1; cursor: pointer; }
 .li-row .li-x:hover { color: var(--fg); }
 .li-err { font-size: 13px; color: var(--missing); min-height: 0; }
 .shake { animation: shake .22s; }
 /* risposta sbagliata: campo e "Prova" rossi, con lo sfondo rosso scuro, e una scossa */
-input.wrong, input.wrong:focus { border-color: #e0483a !important; background: #240403 !important; color: #fff !important; }
-input.wrong::placeholder { color: #ffffffa0; }
+.wrong:is(input, textarea), .wrong:is(input, textarea):focus { border-color: #e0483a !important; background: #240403 !important; color: #fff !important; }
+.wrong:is(input, textarea)::placeholder { color: #ffffffa0; }
 /* risposta giusta: bordo verde che brilla, dentro giallo */
-input.right, input.right:focus, button.right {
+.right:is(input, textarea), .right:is(input, textarea):focus, button.right {
   border: 1.5px solid #3fd58c !important; color: #fff !important; background: #0d3b25 !important;
   animation: glow 1s ease-out, popin .35s cubic-bezier(.3,1.6,.5,1);
 }
-input.right::placeholder { color: #ffffffa0; }
+.right:is(input, textarea)::placeholder { color: #ffffffa0; }
 @keyframes glow { 0% { box-shadow: 0 0 0 0 #3fd58c; } 30% { box-shadow: 0 0 0 4px #3fd58c88, 0 0 18px #3fd58c; } 100% { box-shadow: 0 0 0 2px #3fd58c33, 0 0 8px #3fd58c55; } }
 @keyframes popin { 40% { transform: scale(1.06); } }
-@media (prefers-reduced-motion: reduce) { input.right, button.right { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .right:is(input, textarea), button.right { animation: none; } }
 button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !important; color: #fff !important; }
 @keyframes shake { 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-3px); } }
 @media (prefers-reduced-motion: reduce) { .shake { animation: none; } }
@@ -374,7 +379,7 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
 .info-head { display: flex; align-items: center; gap: 12px; padding-right: 18px; }
 .info-arms { flex: none; width: 52px; height: 60px; display: grid; place-items: center; }
 .info-arms img { max-width: 52px; max-height: 60px; object-fit: contain; }
-.info-arms .ini { width: 46px; height: 54px; display: grid; place-items: center; border-radius: 6px 6px 50% 50% / 6px 6px 40% 40%; background: var(--found); color: #fff; font-family: var(--display); font-weight: 400; font-size: 26px; }
+.info-arms .ini { width: 46px; height: 54px; display: grid; place-items: center; border-radius: 6px 6px 50% 50% / 6px 6px 40% 40%; background: var(--found); color: var(--on-found); font-family: var(--display); font-weight: 400; font-size: 26px; }
 .info-head h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1.05; text-wrap: balance; }
 .info-dial { margin-top: 3px; font-size: 13px; font-style: italic; color: var(--fg); opacity: .8; }
 .info-pop-n { margin-top: 3px; color: var(--muted); font-size: 13px; }
@@ -421,8 +426,9 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
       </div>
     </div>
     <button type="button" class="ghost wide" id="tTunes">Brani musicali</button>
+    <button type="button" class="ghost wide" id="tExit">Esci dall'app</button>
     <button type="button" class="ghost wide danger" id="tWipe">Azzera tutti i progressi</button>
-    <p class="app-ver">I Comuni della Granda · v171</p>
+    <p class="app-ver">I Comuni della Granda · v178</p>
   </div>
   <div class="sheet" id="tunes" hidden role="dialog" aria-label="Brani musicali">
     <div class="sheet-head"><h3>Brani musicali</h3><button type="button" class="x" data-close aria-label="Chiudi">×</button></div>
@@ -475,7 +481,7 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
     <div class="actions">
       <button type="button" class="flagbtn" id="tMissing"><span class="flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="lbl">Mostra mancanti</span></button>
       <button type="button" class="flagbtn" id="tReset"><span class="flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></span><span class="lbl">Ricomincia</span></button>
-      <button type="button" class="flagbtn home" id="tMenu"><span class="flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10"/></svg></span><span class="lbl">Cambia modalità</span></button>
+      <button type="button" class="flagbtn" id="tMenu"><span class="flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 11 9-7 9 7"/><path d="M5 10v10h14V10"/></svg></span><span class="lbl">Cambia modalità</span></button>
     </div>
     <div id="confirm" class="confirm" hidden>
       <span id="confirmText"></span>
@@ -490,19 +496,27 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
 <form id="form" class="dock" autocomplete="off">
   <label for="guess" class="dock-lab">Inserisci un Comune</label>
   <div class="dock-row">
-    <input id="guess" placeholder="Scrivi un comune…" autocapitalize="words" spellcheck="false" enterkeyhint="go">
+    <textarea id="guess" rows="1" placeholder="Scrivi un comune…" autocapitalize="words" autocomplete="off" spellcheck="false" enterkeyhint="go"></textarea>
     <button type="submit">Prova</button>
   </div>
 </form>
 
 <div class="listwrap">
-  <button type="button" class="list-btn" id="tList" aria-expanded="false" aria-controls="listbox" title="Elenco Trovati">
-    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor"/></svg>
-    <span class="txt">Elenco Trovati</span>
+  <button type="button" class="flagbtn" id="tList" aria-expanded="false" aria-controls="listbox" title="Elenco Trovati">
+    <span class="flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor"/></svg></span>
+    <span class="lbl">Elenco Trovati</span>
     <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
   </button>
   <div class="listbox" id="listbox" hidden>
     <ul id="list"></ul>
+  </div>
+</div>
+
+<div class="exit-ask" id="exitAsk" hidden role="alertdialog" aria-modal="true" aria-labelledby="exitQ">
+  <div class="exit-card">
+    <p id="exitQ">Va bin parèj?</p>
+    <div class="exit-btns"><button type="button" class="flagbtn" id="exitYes"><span class="flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h5v16h-5"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h10"/></svg></span><span class="lbl">Sì</span></button><button type="button" class="flagbtn" id="exitNo"><span class="flag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="lbl">Speta 'ncora 'n moment</span></button></div>
+    <small id="exitHint" hidden>Per uscire premi ancora Indietro</small>
   </div>
 </div>
 
@@ -1153,20 +1167,41 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
   }
   const dockH = () => document.documentElement.style.setProperty("--dock-h", ($("form").offsetHeight + 54) + "px");
   addEventListener("resize", dockH); requestAnimationFrame(dockH);
+  /* Caselle del nome: Invio conferma (niente a capo), altezza adattata al testo fino a due righe */
+  function toEnd(t) { const k = t.value.length; t.focus(); try { t.setSelectionRange(k, k); } catch (e) {} }
+  function fitField(t) {
+    const cs = getComputedStyle(t), lh = parseFloat(cs.lineHeight) || 20;
+    const extra = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth);
+    t.style.height = "auto";
+    const need = t.scrollHeight + parseFloat(cs.borderTopWidth) + parseFloat(cs.borderBottomWidth), max = lh * 2 + extra + 1;
+    t.style.height = Math.min(need, max) + "px";
+    t.style.overflowY = need > max ? "auto" : "hidden";
+  }
+  function nameField(t, onFit) {
+    const submit = () => t.form.requestSubmit();
+    t.addEventListener("keydown", e => { if (e.key === "Enter" && !e.isComposing) { e.preventDefault(); submit(); } });
+    t.addEventListener("beforeinput", e => { if (e.inputType === "insertLineBreak" || e.inputType === "insertParagraph") { e.preventDefault(); submit(); } });
+    t.addEventListener("input", () => {
+      if (/[\r\n]/.test(t.value)) { const had = /[\r\n]\s*$/.test(t.value); t.value = t.value.replace(/\s*[\r\n]+\s*/g, " ").trimEnd(); if (had) submit(); }
+      fitField(t); if (onFit) onFit();
+    });
+  }
+  nameField($("guess"), dockH);
+  const clearMain = () => { $("guess").value = ""; fitField($("guess")); dockH(); };
   $("form").addEventListener("submit", e => {
     e.preventDefault();
     const inp = $("guess"), raw = inp.value.trim();
     if (!raw) return;
     const okBtn = $("form").querySelector('button[type="submit"]');
     const egg = tryEgg(raw);
-    if (egg) { right(inp, okBtn); inp.value = ""; return; }
+    if (egg) { right(inp, okBtn); clearMain(); return; }
     const n = byKey.get(norm(raw));
-    if (!n) { wrong(inp, okBtn); inp.select(); return; }
-    if (found.has(n)) { say(n + ": già trovato.", ""); focusOn(n, true); inp.value = ""; return; }
+    if (!n) { wrong(inp, okBtn); toEnd(inp); return; }
+    if (found.has(n)) { say(n + ": già trovato.", ""); focusOn(n, true); clearMain(); return; }
     found.add(n); save(); restyle(n); renderCount(); focusOn(n, true);
     right(inp, okBtn);
     if (found.size === layers.size) say("Tutti e " + layers.size + "! Provincia completata.", "ok");
-    inp.value = "";
+    clearMain();
   });
 
   /* Errore: campo e pulsante diventano rossi e si scuotono; tornano normali appena si riscrive */
@@ -1185,7 +1220,7 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
   // sul telefono si apre trascinando il dito in giù sul pannello e si chiude trascinandolo in su
   (() => {
     const pn = $("panel"); let y0 = null, x0 = 0;
-    pn.addEventListener("touchstart", e => { if (e.touches.length !== 1 || e.target.closest("input")) { y0 = null; return; } y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; }, { passive: true });
+    pn.addEventListener("touchstart", e => { if (e.touches.length !== 1 || e.target.closest("input, textarea")) { y0 = null; return; } y0 = e.touches[0].clientY; x0 = e.touches[0].clientX; }, { passive: true });
     pn.addEventListener("touchend", e => {
       if (y0 == null) return;
       const t = e.changedTouches[0], dy = t.clientY - y0, dx = t.clientX - x0; y0 = null;
@@ -1409,9 +1444,28 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
   /* Modalità "Proprio lì": casella sopra il comune toccato */
   const liBox = document.createElement("form");
   liBox.className = "li-form"; liBox.autocomplete = "off";
-  liBox.innerHTML = '<div class="li-row"><input id="liGuess" aria-label="Nome del comune" autocapitalize="words" spellcheck="false" enterkeyhint="go" placeholder="Nome del comune"><button type="submit">Prova</button><button type="button" class="li-x" aria-label="Chiudi">×</button></div><div class="li-err" id="liErr" aria-live="polite"></div>';
+  liBox.innerHTML = '<div class="li-row"><textarea id="liGuess" rows="1" aria-label="Nome del comune" autocapitalize="words" autocomplete="off" spellcheck="false" enterkeyhint="go" placeholder="Nome del comune"></textarea><button type="submit">Prova</button><button type="button" class="li-x" aria-label="Chiudi">×</button></div><div class="li-err" id="liErr" aria-live="polite"></div>';
   let target = null;
   const pop = L.popup({ className: "li-pop", closeButton: false, autoPan: true, maxWidth: 400, minWidth: 0 });
+  // la casella si allarga mentre si scrive, fino alla larghezza dello schermo; poi va su due righe
+  const liInp = liBox.querySelector("#liGuess"), meas = document.createElement("canvas").getContext("2d");
+  function liFit() {
+    const cs = getComputedStyle(liInp), row = liBox.querySelector(".li-row");
+    meas.font = cs.fontWeight + " " + cs.fontSize + " " + cs.fontFamily;
+    const pad = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight) + parseFloat(cs.borderLeftWidth) + parseFloat(cs.borderRightWidth);
+    const textW = meas.measureText(liInp.value || liInp.placeholder).width + pad + 8;
+    const others = [...row.children].filter(c => c !== liInp).reduce((a, c) => a + c.getBoundingClientRect().width, 0) + 6 * (row.children.length - 1);
+    const room = map.getSize().x - 20 - 20;                            // margini della mappa e del fumetto
+    const maxW = Math.max(150, Math.min(440, room) - others);
+    const w = Math.round(Math.min(Math.max(150, textW), maxW));
+    liInp.style.width = w + "px";
+    fitField(liInp);
+    pop.options.maxWidth = Math.max(200, room);
+    pop.options.minWidth = Math.min(w + others + 1, pop.options.maxWidth);   // Leaflet da solo non allarga il fumetto già aperto
+    // non pop.update(): ricreerebbe il contenuto e la casella perderebbe il cursore
+    if (pop.isOpen()) { pop._updateLayout(); pop._updatePosition(); pop._adjustPan(); }
+  }
+  nameField(liInp, liFit);
   function askHere(n) {
     if (target && target !== n) restyle(target);
     target = n;
@@ -1424,7 +1478,7 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
     pop.setLatLng(l.getBounds().getCenter()).setContent(liBox).openOn(map);
     liBox.querySelector("#liErr").textContent = "";
     const inp = liBox.querySelector("#liGuess"); inp.value = "";
-    pop.update();
+    pop.update(); liFit();
     setTimeout(() => inp.focus(), 60);
   }
   liBox.querySelector(".li-x").onclick = () => map.closePopup(pop);
@@ -1435,7 +1489,7 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
     if (!raw || !target) return;
     const btn = liBox.querySelector('button[type="submit"]');
     const egg = tryEgg(raw);
-    if (egg) { err.textContent = ""; right(inp, btn); inp.value = ""; return; }
+    if (egg) { err.textContent = ""; right(inp, btn); inp.value = ""; liFit(); return; }
     const n = byKey.get(norm(raw));
     if (n === target) {
       const t = target; found.add(t); save(); renderCount();
@@ -1446,7 +1500,7 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
     }
     err.textContent = "";
     wrong(inp, btn);
-    inp.select();
+    toEnd(inp);
   });
 
   /* Easter egg: i nomi degli amici del collage li fanno comparire nella foto iniziale */
@@ -1695,6 +1749,7 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
   const gameWindows = () => !!(map._popup && map.hasLayer(map._popup)) || !$("listbox").hidden || !$("options").hidden || !$("confirm").hidden;
   const canGoBack = () => inGame || sheetOpen() || !$("homeCard").hidden;
   function goBack() {
+    if (!$("exitAsk").hidden) { $("exitAsk").hidden = true; return; }
     if (inGame) {
       if (gameWindows()) { map.closePopup(); setList(false); $("confirm").hidden = true; if (!$("options").hidden) setOptions(false); }
       else { inGame = false; goHome(); }
@@ -1706,8 +1761,9 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
      Chrome su Android salta le voci create senza interazione (es. dopo un trascinamento o dentro popstate)
      e chiudeva l'app. In gioco c'è sempre una riserva di voci (ricaricata a ogni tocco), così anche
      le finestre aperte con un gesto si chiudono senza doverne aggiungere altre. */
-  const steps = () => inGame ? 6
-    : !$("tunes").hidden ? 2 : (!$("settings").hidden || !$("homeCard").hidden) ? 1 : 0;
+  // nella schermata iniziale resta sempre una voce in più: tornando indietro da lì si chiede se uscire
+  const steps = () => !$("exitAsk").hidden ? 0 : inGame ? 6
+    : !$("tunes").hidden ? 3 : (!$("settings").hidden || !$("homeCard").hidden) ? 2 : 1;
   const depthOf = st => (st && st.d) || 0;
   let depth = depthOf(history.state), skipPop = 0;
   function syncBack(user) {
@@ -1726,8 +1782,22 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
       if (!w || depth === 0) { if (gameWindows()) goBack(); goBack(); setTimeout(syncBack, 0); }
       return;
     }
+    if (depth === 0 && $("exitAsk").hidden) { let g = 4; while (steps() > 1 && g--) goBack(); askExit(); return; }
     let guard = 4; while (steps() > depth && guard--) goBack();
   });
+  function askExit() {
+    $("exitHint").hidden = true; $("exitAsk").hidden = false;
+    setTimeout(() => $("exitNo").focus(), 30);
+  }
+  $("tExit").onclick = () => { openSheet(null); askExit(); };
+  $("exitNo").onclick = () => { $("exitAsk").hidden = true; };          // il tocco rimette la voce per la prossima volta
+  $("exitAsk").addEventListener("click", e => { if (e.target === $("exitAsk")) $("exitAsk").hidden = true; });
+  $("exitYes").onclick = () => {
+    // un'app installata di solito si chiude; se il sistema non lo permette basta premere ancora Indietro
+    try { window.close(); } catch (e) {}
+    try { history.back(); } catch (e) {}
+    setTimeout(() => { if (!document.hidden) $("exitHint").hidden = false; }, 400);
+  };
   addEventListener("click", () => setTimeout(() => syncBack(true), 0), true);
   addEventListener("keydown", e => { if (e.key === "Escape") { e.stopPropagation(); goBack(); } setTimeout(() => syncBack(true), 0); }, true);
   setTimeout(syncBack, 0);
