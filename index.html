@@ -10,7 +10,14 @@
 <meta name="apple-mobile-web-app-title" content="I Comuni della Granda">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} body{margin:0} [hidden]{display:none!important}</style>
 <title>I Comuni della Granda</title>
-<style>/*LEAFLET_CSS*/.app-ver { margin: 4px 0 0; text-align: left; font-size: 12px; color: var(--muted, #888); opacity: .8; }
+<link rel="stylesheet" href="leaflet.css">
+<style>@font-face{font-family:"IM Fell English";font-weight:400;font-display:swap;src:url(fonts/im-fell-english-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:500;font-display:swap;src:url(fonts/barlow-condensed-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-weight:700;font-display:swap;src:url(fonts/barlow-condensed-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:400;font-display:swap;src:url(fonts/barlow-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:500;font-display:swap;src:url(fonts/barlow-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Barlow";font-weight:600;font-display:swap;src:url(fonts/barlow-latin-600-normal.woff2) format("woff2")}
 </style>
 <style>
 /* Layout: mappa a tutto schermo; un unico pannello compatto in alto (campo sempre visibile, opzioni richiudibili, elenco a tendina) */
@@ -243,6 +250,7 @@ html.intro #home .home-stage, html.intro #home .gear { opacity: 0; scale: .82; p
 .sheet { position: absolute; z-index: 5; top: calc(env(safe-area-inset-top, 0px) + 64px); right: max(12px, env(safe-area-inset-right, 0px));
   width: min(340px, calc(100% - 24px)); max-height: calc(100% - 90px); overflow-y: auto; box-sizing: border-box;
   background: var(--surface); color: var(--fg); border-radius: 16px; box-shadow: 0 18px 50px #0007; padding: 14px; display: grid; gap: 12px; animation: pop .2s ease-out; }
+.app-ver { margin: 4px 0 0; text-align: left; font-size: 12px; color: var(--muted, #888); opacity: .8; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; }
 .sheet h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 22px; }
 .sheet .x { width: 34px; height: 34px; padding: 0; border-radius: 50%; background: transparent; color: var(--muted); border: 0; font-size: 24px; line-height: 1; }
@@ -414,7 +422,7 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
     </div>
     <button type="button" class="ghost wide" id="tTunes">Brani musicali</button>
     <button type="button" class="ghost wide danger" id="tWipe">Azzera tutti i progressi</button>
-    <p class="app-ver">I Comuni della Granda · v169</p>
+    <p class="app-ver">I Comuni della Granda · v171</p>
   </div>
   <div class="sheet" id="tunes" hidden role="dialog" aria-label="Brani musicali">
     <div class="sheet-head"><h3>Brani musicali</h3><button type="button" class="x" data-close aria-label="Chiudi">×</button></div>
