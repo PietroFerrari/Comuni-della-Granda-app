@@ -294,8 +294,8 @@ button.danger { color: var(--missing); border-color: color-mix(in srgb, var(--mi
 button.danger.armed { background: var(--missing); color: #fff; border-color: var(--missing); }
 .tune-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
 .tune-list li { display: grid; gap: 2px; padding: 9px 11px; border-radius: 11px; background: var(--bg); }
-.tune-list b { font-family: var(--display); font-weight: 400; font-size: 18px; }
-.tune-list .where { font-size: 13px; color: var(--found); font-weight: 600; }
+.tune-list b { font-family: var(--display); font-weight: 400; font-size: 18px; color: var(--found); }
+.tune-list .where { font-size: 13px; color: var(--fg); font-weight: 600; }
 .tune-list .inst { font-size: 13px; color: var(--muted); }
 .tune-list li.now { outline: 2px solid var(--found); }
 /* 'Nduma! e la scelta della modalità: al centro, in alto, sulla montagna (dove non c'è nessuno) */
@@ -499,7 +499,7 @@ try { window.__setCity(localStorage.getItem("comuni-cuneo-citta") || "Cuneo"); }
     <button type="button" class="ghost wide" id="tTunes">Brani musicali</button>
     <button type="button" class="ghost wide danger" id="tWipe">Azzera tutti i progressi</button>
     <button type="button" class="ghost wide" id="tExit">Esci dall'app</button>
-    <p class="app-ver">I Comuni della Granda · v0.207</p>
+    <p class="app-ver">I Comuni della Granda · v0.208</p>
   </div>
   <div class="sheet" id="tunes" hidden role="dialog" aria-label="Brani musicali">
     <div class="sheet-head"><h3>Brani musicali</h3><button type="button" class="x" data-close aria-label="Chiudi">×</button></div>
