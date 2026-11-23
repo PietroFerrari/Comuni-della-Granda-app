@@ -499,7 +499,7 @@ try { window.__setCity(localStorage.getItem("comuni-cuneo-citta") || "Cuneo"); }
     <button type="button" class="ghost wide" id="tTunes">Brani musicali</button>
     <button type="button" class="ghost wide danger" id="tWipe">Azzera tutti i progressi</button>
     <button type="button" class="ghost wide" id="tExit">Esci dall'app</button>
-    <p class="app-ver">I Comuni della Granda · v0.211</p>
+    <p class="app-ver">I Comuni della Granda · v0.212</p>
   </div>
   <div class="sheet" id="tunes" hidden role="dialog" aria-label="Brani musicali">
     <div class="sheet-head"><h3>Brani musicali</h3><button type="button" class="x" data-close aria-label="Chiudi">×</button></div>
@@ -1913,8 +1913,12 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
 if ("serviceWorker" in navigator) {
   const hadSW = !!navigator.serviceWorker.controller; let reloading = false;
   navigator.serviceWorker.addEventListener("controllerchange", () => { if (hadSW && !reloading) { reloading = true; location.reload(); } });
-  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(reg => {
-    const chk = () => reg.update().catch(() => {});
+  // GitHub Pages tiene in cache sw.js fino a 10 minuti: si legge la versione pubblicata con un indirizzo sempre nuovo
+  // (che la cache non ha) e, se è cambiata, si registra il nuovo service worker con un indirizzo che la cache non conosce
+  const CUR = "0.212", reg0 = v => navigator.serviceWorker.register("sw.js?v=" + v, { updateViaCache: "none" });
+  reg0(CUR).then(reg => {
+    const chk = () => fetch("sw.js?t=" + Date.now(), { cache: "no-store" }).then(r => r.text()).then(t => { const m = /comuni-cn-v([\d.]+)/.exec(t); if (m && m[1] !== CUR) reg0(m[1]); else reg.update(); }).catch(() => {});
+    chk();
     document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") chk(); });
     setInterval(chk, 24 * 60 * 60 * 1000);
   }).catch(() => {});
