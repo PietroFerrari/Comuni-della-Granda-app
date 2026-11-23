@@ -36,7 +36,7 @@
   --cn-red: #c0272d; --cn-white: #ffffff; --cn-tint: #fbe7e6; --cn-line: #e9b4b2;
   --shadow: 0 4px 18px #1d243026;
   --relief-opacity: 1;
-  --found-relief: .5;
+  --found-relief: .3;
   --line-relief: #f3f0e6; --w-relief: 0.8; --w-relief-near: 1.5;
   --display: "IM Fell English", Georgia, "Times New Roman", serif;
   --num: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
@@ -45,11 +45,11 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #141a22; --surface: #1c232d; --fg: #e6ebf1; --muted: #97a3b2; --line: #a7b3c2;
   --fill: #303a48; --found: #6ea0e0; --found-soft: #6ea0e030; --on-found: #0f1b2c; --flash: #f0b947; --missing: #e0715f;
-  --knob: #f3f5f9; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .25; --line-relief: #a7b3c2; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark } }
+  --knob: #f3f5f9; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .15; --line-relief: #a7b3c2; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #141a22; --surface: #1c232d; --fg: #e6ebf1; --muted: #97a3b2; --line: #a7b3c2;
   --fill: #303a48; --found: #6ea0e0; --found-soft: #6ea0e030; --on-found: #0f1b2c; --flash: #f0b947; --missing: #e0715f;
-  --knob: #f3f5f9; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .25; --line-relief: #a7b3c2; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark }
+  --knob: #f3f5f9; --shadow: 0 4px 18px #0009; --relief-opacity: .45; --found-relief: .15; --line-relief: #a7b3c2; --w-relief: 1.1; --w-relief-near: 1.1; --cn-red: #f07a73; --cn-white: #2a2222; --cn-tint: #3a2626; --cn-line: #5a3634; color-scheme: dark }
 
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -428,7 +428,7 @@ button.wrong { border: 1.5px solid #e0483a !important; background: #240403 !impo
     <button type="button" class="ghost wide" id="tTunes">Brani musicali</button>
     <button type="button" class="ghost wide" id="tExit">Esci dall'app</button>
     <button type="button" class="ghost wide danger" id="tWipe">Azzera tutti i progressi</button>
-    <p class="app-ver">I Comuni della Granda · v178</p>
+    <p class="app-ver">I Comuni della Granda · v179</p>
   </div>
   <div class="sheet" id="tunes" hidden role="dialog" aria-label="Brani musicali">
     <div class="sheet-head"><h3>Brani musicali</h3><button type="button" class="x" data-close aria-label="Chiudi">×</button></div>
@@ -1059,7 +1059,7 @@ fetch("comuni.json").then(r => r.json()).then(topo2geo).then(DATA => {
     return {
       color: terrainOn ? css("--line-relief") : css("--line"), opacity: 0.85,
       fillColor: f ? css("--found") : (showMissing ? css("--missing") : css("--fill")),
-      fillOpacity: terrainOn ? (f ? +css("--found-relief") : (showMissing ? 0.3 : 0.12)) : (f ? 0.62 : (showMissing ? 0.32 : 0.9)),
+      fillOpacity: terrainOn ? (f ? +css("--found-relief") : (showMissing ? 0.3 : 0)) : (f ? 0.62 : (showMissing ? 0.32 : 0.9)),
       weight: terrainOn ? +css(nearZoom() ? "--w-relief-near" : "--w-relief") : 0.8
     };
   }
